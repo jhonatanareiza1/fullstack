@@ -9,24 +9,29 @@ function RegisterPage() {
     handleSubmit,
     formState: { errors },
   } = useForm();
-  const { signup, isAuthenticeted, Errors } = useAuth();
+  const { signup, isAuthenticated, Errors = [] } = useAuth(); // Corregido el nombre de isAuthenticated y Errors por defecto como array
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticeted) navigate("/");
-  }, [isAuthenticeted, navigate]);
+    if (isAuthenticated) navigate("/login"); // Cambiada la redirección a '/login'
+  }, [isAuthenticated, navigate]);
 
   const onSubmit = handleSubmit(async (values) => {
-    signup(values);
+    try {
+      await signup(values); // Manejo de errores en la función signup
+    } catch (err) {
+      console.error("Error durante el registro:", err);
+    }
   });
-  /*Formulario de registro*/
+
   return (
     <div className="bg-zinc-900 max-w-md p-10 rounded-md">
-      {Errors.map((error, i) => (
-        <div className="bg-red-600 p-2 text-white" key={i}>
-          {error}
-        </div>
-      ))}
+      {Errors.length > 0 &&
+        Errors.map((error, i) => (
+          <div className="bg-red-600 p-2 text-white" key={i}>
+            {error}
+          </div>
+        ))}
       <form onSubmit={onSubmit}>
         <input
           type="text"
@@ -37,25 +42,33 @@ function RegisterPage() {
         {errors.username && (
           <p className="text-red-600">El nombre de usuario es incorrecto</p>
         )}
+
         <input
           type="email"
           {...register("email", { required: true })}
-          placeholder="email "
+          placeholder="Correo Electrónico"
           className="w-full bg-zinc-700 text-white px-4 py-2 rounded-md my-2"
         />
         {errors.email && (
-          <p className="text-red-600">El email de usuario es incorrecto</p>
+          <p className="text-red-600">El correo electrónico es incorrecto</p>
         )}
+
         <input
           type="password"
           {...register("password", { required: true })}
-          placeholder="password"
+          placeholder="Contraseña"
           className="w-full bg-zinc-700 text-white px-4 py-2 rounded-md my-2"
         />
         {errors.password && (
-          <p className="text-red-600">El password de usuario es incorrecto</p>
+          <p className="text-red-600">La contraseña es incorrecta</p>
         )}
-        <button type="submit">REGISTRATE</button>
+
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded-md my-2"
+        >
+          REGÍSTRATE
+        </button>
       </form>
     </div>
   );

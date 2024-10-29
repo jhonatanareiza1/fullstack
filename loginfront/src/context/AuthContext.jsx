@@ -6,7 +6,7 @@ export const AuthContext = createContext();
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("use Auth no esta utilizando un authProvider");
+    throw new Error("useAuth debe ser utilizado dentro de un AuthProvider");
   }
   return context;
 };
@@ -18,13 +18,26 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (user) => {
     try {
+      setErrors([]); // Limpiar errores antes de una nueva solicitud
       const res = await registerRequest(user);
-      console.log(res);
-      setUser(res.data);
-      setIsAuthenticated(true);
+      setUser(res.data); // Establecer los datos del usuario registrado
+      setIsAuthenticated(true); // Establecer autenticado
     } catch (error) {
-      //console.log(error.response);
-      setErrors(error.response.data);
+      console.log("Error en el registro:", error);
+
+      // Manejar errores de respuesta (error.response puede estar indefinido si no hay respuesta del servidor)
+      if (error.response) {
+        if (typeof error.response.data === "string") {
+          setErrors([error.response.data]); // Si es un string
+        } else if (Array.isArray(error.response.data)) {
+          setErrors(error.response.data); // Si es un array de mensajes de error
+        } else if (error.response.data.message) {
+          setErrors([error.response.data.message]); // Si tiene un mensaje de error
+        }
+      } else {
+        // Error sin respuesta del servidor (posible problema de red)
+        setErrors(["No se pudo conectar con el servidor"]);
+      }
     }
   };
 
